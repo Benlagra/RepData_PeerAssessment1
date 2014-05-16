@@ -86,7 +86,7 @@ text(6000, 25, labels = paste("Median = ", format(median(tsd$steps))), col = "gr
 
 I didn't specify a value for the argument `breaks` as I think the resulting histogram is fine. The next refinement for the histogram is obtained using `breaks = 8`.
 
-The histogram seems relatively symmetric and the total number of steps per day follows a unimodal distribution. The mean and the median associated with the total number of steps per day are shown by blue and green vertical lines. Their values are obtained as:
+The histogram seems relatively symmetric and the total number of steps per day follows a unimodal distribution. The mean and the median associated with the total number of steps per day are shown by blue and green vertical lines. Their values are  10766 and 10765, respectively, as obtained from:
 
 ```r
 mean(tsd$steps)
@@ -134,7 +134,7 @@ text(position, max, labels = paste("Maximum of", format(max), "steps at", format
 
 The average number of steps is almost zero until intervall 500, corresponding to time 05:00, and dies out approximately after 2100, corresponding to a time 21:00.
 
-It peaks at 
+It peaks at 206 
 
 ```r
 max(asi$steps)
@@ -197,6 +197,8 @@ sum(is.na(data$steps))
 ## [1] 2304
 ```
 
+
+So there are 2304 `NA` values in the dataset.
 
 In order to define a strategy to fill these missing values, we need first to understand their structure in each day. The question is: How many `NA` do we have in each day ?
 
@@ -271,7 +273,7 @@ text(6000, 25, labels = paste("Median = ", format(median(tsdc$steps))), col = "g
 
 This looks very similar to the previous histogram. The only difference is the frequency of the central bin, which went from 28 to 36. This corresponds to exactly 8 additions to the mean value of the total number of steps per day, which are located in the central bin as we've seen earlier.
 
-The new mean and median are given by
+The new mean and median are 10766 and 10766 as given by
 
 ```r
 mean(tsdc$steps)
@@ -314,7 +316,7 @@ text(6000, 25, labels = paste("Median = ", format(median(tsd0$steps))), col = "g
 ![plot of chunk total_steps_day_NA_filled_with_0](figure/total_steps_day_NA_filled_with_0.png) 
 
 
-Now the histogram changed completely and is logically biased towards 0 values. The mean and median are given by
+Now the histogram changed completely and is logically biased towards 0 values. The mean and median are 9354 and 10395 as given by
 
 
 ```r
