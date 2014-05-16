@@ -8,7 +8,7 @@ A description of the assignment can be found [here](./README.md).
 
 The first step is to load the data. These are already present in the forked repository so I don't need to download them again. However, they are originally zipped, so I unzip them if this has not already been done. The result is a text file in CSV format named *`activity.csv`*.
 
-To read the unzipped data, I use the `read.csv()` function where I precise the classes of the three columns corresponding to the number of steps (integer class), the date (Date class), and the 5-minute identifier (integer class) using the argument `colClasses`.
+To read the unzipped data, I use the `read.csv()` function where I precise the classes of the three columns corresponding to the number of steps (integer class), the date (Date class), and the 5-minute identifier (integer class, see below) using the argument `colClasses`.
 
 ```r
 if (!file.exists("activity.csv")) {
@@ -21,7 +21,7 @@ data <- data[order(data[, 2], data[, 3]), ]
 
 Notice that I make sure that my data are ordered by date then by interval identifier.
 
-A structure of the data can be viewd using the `str()` function as follows :
+A structure of the data can be viewed using the `str()` function as follows :
 
 
 ```r
@@ -40,7 +40,7 @@ The data frame `data` has 3 columns and 17568 observations as expected from the 
 
 We can check that each day has 288 observations, corresponding to the 288 = 24x60/5 possible 5-minute intervals, using `table(data$date)`. We check as well that each 5-minute interval is present in the 61 days, from 2012-10-01 to 2012-11-30, using `table(data$interval)`. 
 
-Notice that **the identifier for the 5-minute intervals has gaps at the end of each hour**. E.g.: the identifier jumps from 55 to 100. This correspond to times 00:55 and 01:00 respectively. Thus, the identifier runs from 0 to 2355 instead of from 0 to 1440 if it was a continuous label of 5-minute intervals (there are 1440 minutes a day ). **I will not convert this identifier to a time format.** This is justified by the x-axis of the time series plot showed as an exemple in the project description where we see clearely that the 5-minute identifier goes until about 2355.
+Notice that **the identifier for the 5-minute intervals has gaps at the end of each hour**. E.g.: the identifier jumps from 55 to 100. This correspond to times 00:55 and 01:00 respectively. Thus, the identifier runs from 0 to 2355 instead of from 0 to 1440 if it was a continuous label of 5-minute intervals (there are 1440 minutes a day ). **I will not convert this identifier to a time format.** This is justified by the x-axis of the time series plot showed as an exemple in the project description where we see clearely that the 5-minute identifier goes until about 2355. It makes sense to define it as an integer since it can be ordered. Reading the time of the identifier is straightforward without conversion. E.g.: 835 corresponds to the time 08:35.
 
 The data up to this point need no additional processing or transformation for what follows. We will comment on the missing values `NA` later.
 
@@ -132,7 +132,7 @@ text(position, max, labels = paste("Maximum of", format(max), "steps at", format
 
 ![plot of chunk average_daily_activity](figure/average_daily_activity.png) 
 
-The average number of steps is almost zero until intervall 500, corresponding to time 05:00, and dies out approximately afer 2100, corresponding to a time 21:00.
+The average number of steps is almost zero until intervall 500, corresponding to time 05:00, and dies out approximately after 2100, corresponding to a time 21:00.
 
 It peaks at 
 
@@ -155,7 +155,7 @@ asi[which.max(asi$steps), 1]
 ```
 
 
-which corresponds to a time 8:35. This shown as a red point at the intersection of guiding lines, corresponding to the height and position of the peak, in the plot. This seems to be the average time at which people leave home for their work. Its width extends to approximately 920, corresponding to a time 09:20 as can be seen from the ordering of `asi$steps` by decreasing average number of steps :
+which corresponds to a time 8:35. This is shown as a red point at the intersection of guiding lines, corresponding to the height and position of the peak, in the plot. This seems to be the average time at which people leave home for their work. Its width extends to approximately 920, corresponding to a time 09:20 as can be seen from the ordering of `asi$steps` by decreasing average number of steps :
 
 
 ```r
@@ -168,7 +168,7 @@ head(asi[order(asi$steps, decreasing = TRUE), 1], n = 25)
 ```
 
 
-It seems there is no other peak of the same intensity at the end of the day. This may hint to different times for the daily ending of work. Looking at the ordered `asi$steps`, it seems that 15:45 and 18:45 at the most common times for people leaving their work. Notice also the peak arround 12:10 which would correspond to lunch time.
+It seems there is no other peak of the same intensity at the end of the day. This may hint to different times for the daily ending of work. Looking at the ordered `asi$steps`, it seems that 15:45 and 18:45 are the the most common times for people leaving their work. Notice also the peak arround 12:10 which would correspond to lunch time.
 
 
 
@@ -241,7 +241,7 @@ There are indeed 53 days with no `NA` values and 8 days with 288 `NA` values for
 
 Notice that we knew already that 8 days contain missing values for the number of steps from the fact that the data frame `tsd` had only 53 days while the total number of days is 61.
 
-Given the fact above, a reasonable strategy is to fill the missing values of each 5-minute interval of those 8 days with the mean for that 5-minute interval obtained earlier. I create thus a new data frame named `datac` where I fill the days with missing values with the vector `asi$steps`. For this, I create vector `vec` which is an 8 times, as in the number of days with `NA`s, replication of the vector `asi$steps`.
+Given the fact above, a reasonable strategy is to fill the missing values of each 5-minute interval of those 8 days with the mean for that 5-minute interval obtained earlier. I create thus a new data frame named `datac` where I fill the days with missing values with the vector `asi$steps`. For this, I create a vector `vec` which is an 8 times, as in the number of days with `NA`s, replication of the vector `asi$steps`. Sine my 5-minutes interval idenifier is ordered, this procedure is safe.
 
 
 ```r
@@ -341,17 +341,27 @@ The mean being smaller than te median indicates that the distribution of the tot
 
 So far, we have not considered the difference in activity pattern between weekdays and weekends. We can expect such a difference to occur, e.g.: the peak in the morning observed in the time series plot of the average number of steps across all day has no reason to be as strong during the weekends as it is in the weekdays.
 
-To do this, we create a factor vector in the dataset `datac` with two levels: `weekday` and `weekend`. I first create a logical vector `inweekdays` whose values depend on whether the dates in `datac` are weekdays or weekends. Then I define the factor vector `weekday` out of `inweekends` with the labels argument `labels = c('weekday', 'weekend')`. Finally I add the `weekday` variable to the data frame `datac`.
+To do this, we create a factor vector in the dataset `datac` with two levels: `weekday` and `weekend`. I first create a logical vector `inweekdays` whose values depend on whether the dates in `datac` are weekdays or weekends. Then I define the factor vector `weekday` out of `inweekends` with the labels argument `labels = c('weekday', 'weekend')`. Finally I add the `weekday` variable to the data frame `datac`. Notice that the output of `weekdays()` depends on the locale for the R process. Thus, 1989-03-31 corresponds to 'Friday' in english and 'Vendredi' in french. In order to avoid problems when people from different countries and different languages run the present script, I turn-off the locale and the output of `weekdays()` is then in english.
 
 
 ```r
-inweekends <- weekdays(datac$date) %in% c("Samedi", "Dimanche")
+## Turn-off the locale language setting This is to avoid problems when people
+## in different countries use this script
+Sys.setlocale(category = "LC_TIME", "C")
+```
+
+```
+## [1] "C"
+```
+
+```r
+inweekends <- weekdays(datac$date) %in% c("Saturday", "Sunday")
 weekday <- factor(as.character(inweekends), labels = c("weekday", "weekend"))
 datac$weekday <- weekday
 ```
 
 
-Now we can make a time series plot similar to the one above but split according to the value of the new `weekday` variable. To do this, I use again the `aggregate()` function but this time with the formula `steps ~ interval + weekday`. The time series plot is done using the function `xyplot` for the `lattice` graphic system with the formula `steps ~ interval | weekday`.
+Now we can make a time series plot similar to the one above but split according to the value of the new `weekday` variable. To do this, I use again the `aggregate()` function but this time with the formula `steps ~ interval + weekday`. The time series plot is done using the function `xyplot` from the `lattice` graphic system with the formula `steps ~ interval | weekday`.
 
 ```r
 library("lattice")
@@ -376,4 +386,4 @@ xyplot(steps ~ interval | weekday, avg, layout = c(1, 2), main = "Plot 5: Averag
 ![plot of chunk average_daily_activity_weekday](figure/average_daily_activity_weekday.png) 
 
 
-Now the peak observed earlier appears to be indeed related to weekdays and work hours.
+Now the peak observed earlier appears to be indeed related to weekdays and work hours. It's height is even bigger now for weekdays.
